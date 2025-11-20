@@ -45,3 +45,4 @@ debug_page*.html
 # 部署生成的文件
 *.zip
 temp/
+文案.docx
