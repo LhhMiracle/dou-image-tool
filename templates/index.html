@@ -123,6 +123,58 @@
             cursor: not-allowed;
         }
 
+        /* 商品取图输入框样式 */
+        .input-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            border-radius: 15px;
+            border: 2px solid #e8ebff;
+        }
+
+        .input-section label {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            font-size: 15px;
+        }
+
+        .input-section textarea,
+        #productUrl {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            height: 50px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-section textarea:focus,
+        #productUrl:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .input-section textarea::placeholder,
+        #productUrl::placeholder {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .input-section .btn-primary {
+            white-space: nowrap;
+            padding: 12px 24px;
+            font-size: 15px;
+        }
+
         .progress {
             margin: 20px 0;
             display: none;
@@ -449,15 +501,99 @@
         .btn-regenerate:hover {
             background: #e0e0e0;
         }
+
+        /* 商品取图样式 */
+        .product-image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .product-image-item {
+            position: relative;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-image-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .product-image-item.selected {
+            border-color: #28a745;
+            border-width: 3px;
+        }
+
+        .product-image-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .product-image-item .checkbox {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .product-image-item.selected .checkbox {
+            background: #28a745;
+            color: white;
+        }
+
+        .image-category {
+            margin: 20px 0;
+        }
+
+        .image-category h4 {
+            margin-bottom: 10px;
+            color: #333;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .result-header h3 {
+            margin: 0;
+        }
+
+        .result-header .result-actions {
+            display: flex;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>✨ 多功能工具箱</h1>
-        <p class="subtitle">批量抠图 | AI文案生成</p>
+        <p class="subtitle">批量抠图 | 视频提取 | AI文案生成</p>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('image')">📸 批量抠图</button>
+            <button class="tab-btn" onclick="switchTab('video')">🎬 视频提取</button>
+            <button class="tab-btn" onclick="switchTab('product')">🛍️ 商品取图</button>
             <button class="tab-btn" onclick="switchTab('content')">✍️ 文案生成</button>
         </div>
 
@@ -512,6 +648,103 @@
         <div class="results" id="results"></div>
         </div>
         <!-- 批量抠图Tab结束 -->
+
+        <!-- 视频提取Tab -->
+        <div id="videoTab" class="tab-content">
+            <div class="content-generator">
+                <div class="input-group">
+                    <label for="videoUrl">抖音视频链接</label>
+                    <input type="text" id="videoUrl" placeholder="粘贴抖音视频链接，如：https://v.douyin.com/xxxxx 或 https://www.douyin.com/video/xxxxx">
+                </div>
+
+                <button class="btn-primary" id="parseVideoBtn">解析视频</button>
+
+                <div class="loading" id="videoLoading" style="display:none;">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 10px; color: #666;">正在解析视频...</p>
+                </div>
+
+                <div class="generate-result" id="videoResult">
+                    <div class="result-header">
+                        <div class="result-title">🎬 视频信息</div>
+                        <div class="result-meta">作者：<span id="videoAuthor"></span></div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <img id="videoCover" src="" alt="封面" style="max-width: 100%; max-height: 300px; border-radius: 8px; display: none;">
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>视频标题</label>
+                        <div class="result-content" id="videoTitle" style="max-height: 100px;"></div>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>🎤 语音文案（视频中说的话）</label>
+                        <div class="result-content" id="videoTranscript" style="max-height: 300px; background: #fff8e1;"></div>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>无水印视频链接</label>
+                        <input type="text" id="videoDownloadUrl" readonly style="background: #f0f0f0;">
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>统计数据</label>
+                        <div id="videoStats" style="font-size: 14px; color: #666;"></div>
+                    </div>
+
+                    <div class="result-actions">
+                        <button class="btn-action btn-copy" onclick="copyVideoTranscript()">📋 复制语音文案</button>
+                        <button class="btn-action btn-copy" onclick="copyVideoUrl()">🔗 复制视频链接</button>
+                        <button class="btn-action btn-primary" onclick="downloadVideo()">⬇️ 下载视频</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 视频提取Tab结束 -->
+
+        <!-- 商品取图Tab -->
+        <div id="productTab" class="tab-content">
+            <div class="input-section">
+                <label for="productUrl">粘贴抖音商品链接：</label>
+                <textarea id="productUrl" placeholder="支持前端和带货后端两种链接格式：&#10;前端：0.20 【抖音商城】https://v.douyin.com/xxxxx/ 商品名...&#10;后端：【商品名】复制此条消息...【➝➝xxx︽︽】https://v.douyin.com/xxxxx/"></textarea>
+                <button class="btn-primary" id="extractProductBtn">🔍 提取图片</button>
+            </div>
+
+            <div class="loading" id="productLoading" style="display:none;">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #666;">正在提取商品图片...</p>
+            </div>
+
+            <div id="productResult" style="display:none;">
+                <div class="result-header">
+                    <h3>📦 商品图片 (<span id="productImageCount">0</span>张)</h3>
+                    <div class="result-actions">
+                        <button class="btn-secondary" onclick="selectAllProductImages()">全选</button>
+                        <button class="btn-secondary" onclick="deselectAllProductImages()">取消全选</button>
+                        <button class="btn-primary" onclick="batchRemoveBg()">🎨 批量抠图选中图片</button>
+                    </div>
+                </div>
+
+                <div class="image-category">
+                    <h4>商品图</h4>
+                    <div id="mainImages" class="product-image-grid"></div>
+                </div>
+
+                <div class="image-category">
+                    <h4>详情图</h4>
+                    <div id="detailImages" class="product-image-grid"></div>
+                </div>
+            </div>
+
+            <div id="batchProcessResult" style="display:none;">
+                <h3>✅ 抠图结果</h3>
+                <div id="processedImages" class="product-image-grid"></div>
+                <button class="btn-primary" onclick="downloadAllProcessed()">📥 打包下载全部</button>
+            </div>
+        </div>
+        <!-- 商品取图Tab结束 -->
 
         <!-- 文案生成Tab -->
         <div id="contentTab" class="tab-content">
@@ -710,9 +943,315 @@
             if (tabName === 'image') {
                 document.getElementById('imageTab').classList.add('active');
                 document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+            } else if (tabName === 'video') {
+                document.getElementById('videoTab').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+            } else if (tabName === 'product') {
+                document.getElementById('productTab').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
             } else if (tabName === 'content') {
                 document.getElementById('contentTab').classList.add('active');
-                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                document.querySelector('.tab-btn:nth-child(4)').classList.add('active');
+            }
+        }
+
+        // 视频解析功能
+        const parseVideoBtn = document.getElementById('parseVideoBtn');
+        const videoLoading = document.getElementById('videoLoading');
+        const videoResult = document.getElementById('videoResult');
+        let currentVideoUrl = '';
+
+        parseVideoBtn.addEventListener('click', async () => {
+            const url = document.getElementById('videoUrl').value.trim();
+
+            if (!url) {
+                alert('请输入抖音视频链接');
+                return;
+            }
+
+            videoLoading.style.display = 'block';
+            videoResult.classList.remove('show');
+            parseVideoBtn.disabled = true;
+
+            try {
+                const response = await fetch('/parse_video', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                videoLoading.style.display = 'none';
+                parseVideoBtn.disabled = false;
+
+                if (data.success) {
+                    const videoData = data.data;
+
+                    // 显示封面
+                    const coverImg = document.getElementById('videoCover');
+                    if (videoData.cover_url) {
+                        coverImg.src = videoData.cover_url;
+                        coverImg.style.display = 'block';
+                    } else {
+                        coverImg.style.display = 'none';
+                    }
+
+                    // 显示作者
+                    document.getElementById('videoAuthor').textContent = videoData.author || '未知';
+
+                    // 显示标题
+                    document.getElementById('videoTitle').textContent = videoData.title || '无标题';
+
+                    // 显示语音文案
+                    document.getElementById('videoTranscript').textContent = videoData.transcript || '正在识别...';
+
+                    // 显示视频链接
+                    document.getElementById('videoDownloadUrl').value = videoData.video_url || '';
+                    currentVideoUrl = videoData.video_url || '';
+
+                    // 显示统计数据
+                    const stats = videoData.statistics || {};
+                    document.getElementById('videoStats').innerHTML = `
+                        👍 点赞: ${stats.digg_count || 0} |
+                        💬 评论: ${stats.comment_count || 0} |
+                        🔄 分享: ${stats.share_count || 0} |
+                        ⭐ 收藏: ${stats.collect_count || 0}
+                    `;
+
+                    videoResult.classList.add('show');
+                } else {
+                    alert('解析失败：' + data.error);
+                }
+            } catch (error) {
+                videoLoading.style.display = 'none';
+                parseVideoBtn.disabled = false;
+                alert('解析失败：' + error.message);
+            }
+        });
+
+        // 复制语音文案
+        function copyVideoTranscript() {
+            const content = document.getElementById('videoTranscript').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✅ 语音文案已复制到剪贴板');
+            }).catch(err => {
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        // 复制视频链接
+        function copyVideoUrl() {
+            const url = document.getElementById('videoDownloadUrl').value;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ 视频链接已复制到剪贴板');
+            }).catch(err => {
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        // 下载视频（通过服务器代理避免403）
+        function downloadVideo() {
+            if (currentVideoUrl) {
+                // 使用服务器代理下载
+                const downloadUrl = '/download_video?url=' + encodeURIComponent(currentVideoUrl);
+                window.open(downloadUrl, '_blank');
+            } else {
+                alert('没有可下载的视频链接');
+            }
+        }
+
+        // 商品取图功能
+        let productImages = { main: [], detail: [] };
+
+        document.getElementById('extractProductBtn').addEventListener('click', async () => {
+            const url = document.getElementById('productUrl').value.trim();
+
+            if (!url) {
+                alert('请输入商品链接');
+                return;
+            }
+
+            const loading = document.getElementById('productLoading');
+            const result = document.getElementById('productResult');
+            const btn = document.getElementById('extractProductBtn');
+
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/parse_product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    productImages = {
+                        main: data.data.main_images,
+                        detail: data.data.detail_images
+                    };
+
+                    // 显示图片数量
+                    document.getElementById('productImageCount').textContent = data.data.total_images;
+
+                    // 渲染主图
+                    const mainContainer = document.getElementById('mainImages');
+                    mainContainer.innerHTML = '';
+                    productImages.main.forEach((img, i) => {
+                        mainContainer.appendChild(createImageItem(img, `main-${i}`));
+                    });
+
+                    // 渲染详情图
+                    const detailContainer = document.getElementById('detailImages');
+                    detailContainer.innerHTML = '';
+                    productImages.detail.forEach((img, i) => {
+                        detailContainer.appendChild(createImageItem(img, `detail-${i}`));
+                    });
+
+                    result.style.display = 'block';
+                } else {
+                    alert('提取失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+
+        function createImageItem(imgUrl, id) {
+            const div = document.createElement('div');
+            div.className = 'product-image-item selected';  // 默认勾选
+            div.dataset.url = imgUrl;
+            div.innerHTML = `
+                <img src="${imgUrl}" alt="商品图片" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22><rect fill=%22%23f0f0f0%22 width=%22150%22 height=%22150%22/><text x=%2250%%22 y=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>加载失败</text></svg>'">
+                <div class="checkbox">✓</div>
+            `;
+            div.onclick = () => toggleImageSelection(div);
+            return div;
+        }
+
+        function toggleImageSelection(item) {
+            item.classList.toggle('selected');
+        }
+
+        function selectAllProductImages() {
+            document.querySelectorAll('.product-image-item').forEach(item => {
+                item.classList.add('selected');
+            });
+        }
+
+        function deselectAllProductImages() {
+            document.querySelectorAll('.product-image-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+
+        async function batchRemoveBg() {
+            const selectedItems = document.querySelectorAll('.product-image-item.selected');
+            if (selectedItems.length === 0) {
+                alert('请先选择要处理的图片');
+                return;
+            }
+
+            const urls = Array.from(selectedItems).map(item => item.dataset.url);
+
+            const loading = document.getElementById('productLoading');
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/batch_remove_bg', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ images: urls })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 显示处理结果
+                    const resultContainer = document.getElementById('processedImages');
+                    resultContainer.innerHTML = '';
+
+                    data.results.forEach((result, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'product-image-item';
+                        if (result.result) {
+                            div.innerHTML = `
+                                <img src="${result.result}" alt="处理结果">
+                                <a href="${result.result}" download="processed_${i+1}.png" class="checkbox" style="background:#28a745;color:white;text-decoration:none;">↓</a>
+                            `;
+                        } else {
+                            div.innerHTML = `
+                                <img src="${result.url}" alt="处理失败" style="opacity:0.5;">
+                                <div class="checkbox" style="background:#dc3545;color:white;">✗</div>
+                            `;
+                        }
+                        resultContainer.appendChild(div);
+                    });
+
+                    document.getElementById('batchProcessResult').style.display = 'block';
+
+                    // 保存处理结果用于打包下载
+                    window.processedResults = data.results.filter(r => r.result);
+
+                    // 检查处理结果并给出反馈
+                    const successCount = window.processedResults.length;
+                    const totalCount = data.results.length;
+                    const failCount = totalCount - successCount;
+
+                    if (successCount === 0) {
+                        alert(`处理失败：全部 ${totalCount} 张图片都处理失败，可能是网络问题或CDN访问超时。请稍后重试。`);
+                    } else if (failCount > 0) {
+                        alert(`处理完成：成功 ${successCount} 张，失败 ${failCount} 张`);
+                    }
+                } else {
+                    alert('处理失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        async function downloadAllProcessed() {
+            if (!window.processedResults || window.processedResults.length === 0) {
+                alert('没有可下载的图片');
+                return;
+            }
+
+            // 收集所有成功处理的图片
+            const images = window.processedResults.map(r => r.result);
+
+            try {
+                const response = await fetch('/download_batch_processed', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ images })
+                });
+
+                if (!response.ok) {
+                    throw new Error('下载失败');
+                }
+
+                // 获取blob并下载
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'processed_images.zip';
+                link.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('打包下载失败: ' + error.message);
             }
         }
 

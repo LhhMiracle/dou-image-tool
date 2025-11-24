@@ -9,3 +9,6 @@ flask>=3.0.0
 python-docx>=0.8.11
 gunicorn>=21.2.0
 werkzeug>=3.0.0
+httpx[socks]>=0.25.0
+openai-whisper>=20231117
+opencc-python-reimplemented>=0.1.7
