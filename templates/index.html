@@ -609,12 +609,13 @@
         <div class="model-selector">
             <label for="modelSelect">AI 模型：</label>
             <select id="modelSelect">
-                <option value="u2net" selected>u2net (通用 - 推荐)</option>
+                <option value="u2net" selected>u2net (高质量 - 推荐)</option>
+                <option value="isnet-general-use">isnet-general-use (快速高质量)</option>
                 <option value="u2netp">u2netp (快速版)</option>
                 <option value="u2net_cloth_seg">u2net_cloth_seg (服装专用)</option>
-                <option value="silueta">silueta (人像/服装)</option>
+                <option value="silueta">silueta (最快速)</option>
             </select>
-            <span class="model-hint">💡 不同模型对不同图片效果不同，可多试几个</span>
+            <span class="model-hint">💡 isnet-general-use 速度快质量好，推荐尝试</span>
         </div>
 
         <div class="buttons">
@@ -708,7 +709,7 @@
         <div id="productTab" class="tab-content">
             <div class="input-section">
                 <label for="productUrl">粘贴抖音商品链接：</label>
-                <textarea id="productUrl" placeholder="支持前端和带货后端两种链接格式：&#10;前端：0.20 【抖音商城】https://v.douyin.com/xxxxx/ 商品名...&#10;后端：【商品名】复制此条消息...【➝➝xxx︽︽】https://v.douyin.com/xxxxx/"></textarea>
+                <textarea id="productUrl" placeholder="粘贴抖音商品链接，例如：&#10;0.20 【抖音商城】https://v.douyin.com/xxxxx/ 商品名..."></textarea>
                 <button class="btn-primary" id="extractProductBtn">🔍 提取图片</button>
             </div>
 
@@ -723,6 +724,7 @@
                     <div class="result-actions">
                         <button class="btn-secondary" onclick="selectAllProductImages()">全选</button>
                         <button class="btn-secondary" onclick="deselectAllProductImages()">取消全选</button>
+                        <button class="btn-primary" onclick="downloadSelectedOriginals()">📥 下载选中原图</button>
                         <button class="btn-primary" onclick="batchRemoveBg()">🎨 批量抠图选中图片</button>
                     </div>
                 </div>
@@ -1152,6 +1154,46 @@
             });
         }
 
+        async function downloadSelectedOriginals() {
+            const selectedItems = document.querySelectorAll('.product-image-item.selected');
+            if (selectedItems.length === 0) {
+                alert('请先选择要下载的图片');
+                return;
+            }
+
+            const urls = Array.from(selectedItems).map(item => item.dataset.url);
+
+            const loading = document.getElementById('productLoading');
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/download_originals', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ images: urls })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'original_images.zip';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    const data = await response.json();
+                    alert('下载失败: ' + (data.error || '未知错误'));
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
         async function batchRemoveBg() {
             const selectedItems = document.querySelectorAll('.product-image-item.selected');
             if (selectedItems.length === 0) {
@@ -1160,6 +1202,12 @@
             }
 
             const urls = Array.from(selectedItems).map(item => item.dataset.url);
+
+            // 清空之前的抠图结果
+            const resultContainer = document.getElementById('processedImages');
+            resultContainer.innerHTML = '';
+            document.getElementById('batchProcessResult').style.display = 'none';
+            window.processedResults = [];
 
             const loading = document.getElementById('productLoading');
             loading.style.display = 'block';

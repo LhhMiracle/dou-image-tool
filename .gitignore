@@ -46,3 +46,4 @@ debug_page*.html
 *.zip
 temp/
 文案.docx
+.env

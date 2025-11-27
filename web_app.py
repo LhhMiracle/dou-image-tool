@@ -6,6 +6,10 @@ Web版抠图工具 - 基于Flask
 3. 下载处理后的图片
 """
 
+# 加载环境变量
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, render_template, request, send_file, jsonify
 import os
 import re
@@ -547,6 +551,61 @@ def batch_remove_bg():
             'success': False,
             'error': str(e)
         })
+
+
+@app.route('/download_originals', methods=['POST'])
+def download_originals():
+    """打包下载选中的原始图片"""
+    try:
+        data = request.get_json()
+        image_urls = data.get('images', [])
+
+        if not image_urls:
+            return jsonify({'success': False, 'error': '没有选择图片'}), 400
+
+        print(f"下载 {len(image_urls)} 张原始图片", flush=True)
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+            'Referer': 'https://haohuo.jinritemai.com/',
+            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        }
+
+        # 创建内存中的ZIP文件
+        memory_file = io.BytesIO()
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for i, img_url in enumerate(image_urls):
+                try:
+                    print(f"下载第 {i+1}/{len(image_urls)} 张", flush=True)
+
+                    # 下载图片
+                    response = requests.get(img_url, headers=headers, timeout=30)
+                    if response.status_code == 200:
+                        # 获取文件扩展名
+                        ext = '.jpg'
+                        if 'png' in img_url.lower():
+                            ext = '.png'
+                        elif 'webp' in img_url.lower():
+                            ext = '.webp'
+
+                        zf.writestr(f'original_{i+1}{ext}', response.content)
+                    else:
+                        print(f"  下载失败: HTTP {response.status_code}", flush=True)
+                except Exception as e:
+                    print(f"  下载失败: {str(e)}", flush=True)
+
+        memory_file.seek(0)
+
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name='original_images.zip'
+        )
+
+    except Exception as e:
+        print(f"下载原图失败: {e}", flush=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/download_batch_processed', methods=['POST'])
