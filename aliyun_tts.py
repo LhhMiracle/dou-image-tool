@@ -15,10 +15,10 @@ from datetime import datetime, timezone
 import httpx
 
 
-# 阿里云配置
-ALIYUN_ACCESS_KEY_ID = os.getenv('ALIYUN_ACCESS_KEY_ID', '')
-ALIYUN_ACCESS_KEY_SECRET = os.getenv('ALIYUN_ACCESS_KEY_SECRET', '')
-ALIYUN_APPKEY = os.getenv('ALIYUN_APPKEY', '')
+# 阿里云配置（已内置，无需配置）
+ALIYUN_ACCESS_KEY_ID = os.getenv('ALIYUN_ACCESS_KEY_ID', 'LTAI5tEmuPNqM75naKcLA6oD')
+ALIYUN_ACCESS_KEY_SECRET = os.getenv('ALIYUN_ACCESS_KEY_SECRET', '47iYI6Vp5iDH3Mw02nrnH0Ntae3OxB')
+ALIYUN_APPKEY = os.getenv('ALIYUN_APPKEY', 'oIJvTnPINd2za0Am')
 
 # 阿里云API地址
 TOKEN_URL = "https://nls-meta.cn-shanghai.aliyuncs.com/"

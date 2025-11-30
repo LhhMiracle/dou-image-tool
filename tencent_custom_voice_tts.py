@@ -13,9 +13,9 @@ from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.tts.v20190823 import tts_client, models
 
 
-# 腾讯云配置
-TENCENT_SECRET_ID = os.getenv('TENCENT_SECRET_ID', '')
-TENCENT_SECRET_KEY = os.getenv('TENCENT_SECRET_KEY', '')
+# 腾讯云配置（已内置，无需配置）
+TENCENT_SECRET_ID = os.getenv('TENCENT_SECRET_ID', 'AKID3A6oLhspX1HAuQkxvfnjQs56tRnvsdAd')
+TENCENT_SECRET_KEY = os.getenv('TENCENT_SECRET_KEY', 'MUO8ew0qbBXfZHUYP2Rd2GH4f3DAuRlt')
 
 # 你的自定义音色ID（从腾讯云声音复刻服务获取）
 CUSTOM_VOICE_ID = 'WCHN-add2502611834078ac62ba7dd8d2458e'  # 带货女声
